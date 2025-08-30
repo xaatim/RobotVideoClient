@@ -1,11 +1,28 @@
+import { relations } from "drizzle-orm";
 import {
   pgTable,
   text,
   timestamp,
   boolean,
   varchar,
+  uuid,
+  integer,
+  decimal,
+  serial,
+  pgEnum,
+  pgSequence,
 } from "drizzle-orm/pg-core";
-export type robotType = typeof robotsTable.$inferSelect 
+export type robotType = typeof robotsTable.$inferSelect;
+export type robotModels = typeof robotModelTable.$inferSelect;
+export const userRole = pgEnum("role", ["ADMIN", "USER"]);
+export type userRoleType = (typeof userRole.enumValues)[number];
+
+export const robotSerialNoSeq = pgSequence("robots_serial_no_seq", {
+  startWith: 1,
+  increment: 1,
+  
+});
+
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
@@ -20,6 +37,7 @@ export const user = pgTable("user", {
   updatedAt: timestamp("updated_at")
     .$defaultFn(() => /* @__PURE__ */ new Date())
     .notNull(),
+  role: userRole("role").default("USER"),
 });
 
 export const session = pgTable("session", {
@@ -66,9 +84,47 @@ export const verification = pgTable("verification", {
   ),
 });
 
-export const robotsTable = pgTable("robots", {
-  id: varchar("id", { length: 50 }).primaryKey().notNull(),
-  key: varchar("key", { length: 256 }).notNull().unique(),
-  ownerId: text("owner_id").references(()=>user.id),
-  createdAt: timestamp("created_at").defaultNow(),
+export const robotModelTable = pgTable("robot_model", {
+  id: serial("id").primaryKey(),
+  model: text("model_name").notNull().unique(),
+  modelType: text("model_type").unique().notNull(),
 });
+
+export const robotsTable = pgTable("robots", {
+  id: serial("id").primaryKey(),
+  modelId: serial("model_id")
+    .notNull()
+    .references(() => robotModelTable.id, { onDelete: "cascade" }),
+  serialNo: text("serial_number").notNull().unique(),
+  key: varchar("key", { length: 256 }).notNull().unique(),
+  ownerId: text("owner_id").references(() => user.id),
+  customName: text("custom_name").default(""),
+  createdAt: timestamp("created_at").defaultNow(),
+}); 
+
+export const userRelation = relations(user, ({ many, one }) => ({
+  robots: many(robotModelTable, {
+    relationName: "owner",
+  }),
+}));
+export const robotModelTableRelation = relations(
+  robotModelTable,
+  ({ many, one }) => ({
+    robots: many(robotModelTable, {
+      relationName: "modelRelation",
+    }),
+  })
+);
+
+export const robotTableRelation = relations(robotsTable, ({ one, many }) => ({
+  owner: one(user, {
+    fields: [robotsTable.ownerId],
+    references: [user.id],
+    relationName: "owner",
+  }),
+  modelRelation: one(robotModelTable, {
+    fields: [robotsTable.modelId],
+    references: [robotModelTable.id],
+    relationName: "modelRelation",
+  }),
+}));
