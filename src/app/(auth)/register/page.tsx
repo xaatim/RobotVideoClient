@@ -18,7 +18,14 @@ import { signUp } from "@/lib/auth-client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { updateRobotOwnerShip } from "@/lib/serverq";
+import { getAllRobotModels, updateRobotOwnerShip } from "@/lib/serverq";
+import {
+  RobotModelDropDown,
+} from "@/components/RobotModelDropDown";
+import { useQuery } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { RobotFormData } from "@/lib/zodTypes";
 
 export default function SignUp() {
   const [firstName, setFirstName] = useState("");
@@ -44,6 +51,10 @@ export default function SignUp() {
       reader.readAsDataURL(file);
     }
   };
+  const { data: allModels, isPending } = useQuery({
+    queryKey: ["robots"],
+    queryFn: getAllRobotModels,
+  });
 
   return (
     <Card className="z-50 rounded-lg  max-w-md">
@@ -118,28 +129,7 @@ export default function SignUp() {
               placeholder="Confirm Password"
             />
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="password">Robot Id</Label>
-              <Input
-                type="text"
-                value={robotID}
-                onChange={(e) => setRobotID(e.target.value)}
-                autoComplete="new-password"
-                placeholder="Robot Key"
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="password">Robot Key</Label>
-              <Input
-                type="text"
-                value={robotKey}
-                onChange={(e) => setRobotKey(e.target.value)}
-                autoComplete="new-password"
-                placeholder="Robot Key"
-              />
-            </div>
-          </div>
+
           <div className="grid gap-2">
             <Label htmlFor="image">Profile Image (optional)</Label>
             <div className="flex items-end gap-4">
@@ -200,15 +190,13 @@ export default function SignUp() {
                     },
                   },
                 });
-                if (!t.error) {
-                  await updateRobotOwnerShip(robotID, robotKey, t.data.user.id);
-                }
               } catch (error) {
                 toast.error(
                   "unable to register try again: " + (error as Error).message
                 );
               }
-            }}>
+            }}
+          >
             {loading ? (
               <Loader2 size={16} className="animate-spin" />
             ) : (

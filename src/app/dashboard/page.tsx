@@ -1,9 +1,9 @@
-import DashboardComps from "@/components/DashboardComps";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { Auth } from "@/lib/serverq";
+import { redirect } from "next/navigation";
 
 export default async function Page() {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await Auth();
+  if (!session) redirect("/");
 
-  return <DashboardComps userId={session?.user.id!} />;
+  redirect(`/dashboard/${session.user.role?.toLocaleLowerCase()}`);
 }
