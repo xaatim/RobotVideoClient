@@ -116,12 +116,12 @@ io.on("connection", (socket: AuthenticatedSocket) => {
     }
   });
 
-  socket.on("robot:controlMode", ({ mode, serialNo }) => {
+  socket.on("robot:controlMode", ({ RobotControlData, serialNo }) => {
     if (socket.userId) {
       console.log(
-        `User ${socket.userId} sending mode ${mode} to robot ${serialNo}`
+        `User ${socket.userId} sending mode ${JSON.stringify(RobotControlData)} to robot ${serialNo}`
       );
-      socket.to(serialNo).emit("robot:controlMode", mode);
+      socket.to(serialNo).emit("robot:controlMode", RobotControlData);
     }
   });
 

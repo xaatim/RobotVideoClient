@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { useSocketIo } from "./useSocketIo";
-import { robotMode } from "../../types/nexttoexpress";
+import { robotMode, TwistMessage } from "../../types/nexttoexpress";
 
 export function useRobotStatus(robotId?: string) {
   const { on, emit, off } = useSocketIo();
   const [status, setStatus] = useState<robotMode | null>(null);
-  
+  const [twitsData, setTwistData] = useState<TwistMessage | undefined>();
+  const [isManual, setIsManual] = useState(status=="manual");
+
   useEffect(() => {
     if (!robotId) return;
 
@@ -22,12 +24,30 @@ export function useRobotStatus(robotId?: string) {
     };
   }, [robotId]);
 
-  const toggleMode = (isManual: boolean) => {
+  useEffect(() => {
     emit("robot:controlMode", {
-      mode: isManual ? "manual" : "autonomous",
       serialNo: robotId!,
+      RobotControlData: {
+        mode: isManual ? "manual" : "autonomous",
+        twist: twitsData,
+      },
+    });
+  }, [twitsData, isManual, robotId]);
+
+  const toggleRobotControl = (checked: boolean) => {
+    setIsManual(checked);
+    emit("robot:controlMode", {
+      serialNo: robotId!,
+      RobotControlData: {
+        mode: checked ? "manual" : "autonomous",
+        twist: undefined,
+      },
     });
   };
 
-  return { status, toggleMode };
+  const setRobotTwist = (twist: TwistMessage) => {
+    setTwistData(twist);
+  };
+
+  return { status, toggleRobotControl, setRobotTwist };
 }

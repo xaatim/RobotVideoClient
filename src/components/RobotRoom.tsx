@@ -28,6 +28,8 @@ import GoogleMap from "./Googlemap";
 import { Controller } from "./Controls";
 import { useRobotStream } from "../hooks/useRobotStream";
 import { useRobotStatus } from "@/hooks/useRobotStatus";
+import { keyTpes } from "@/lib/utils";
+import { toast } from "sonner";
 
 type RobotControRoomPros = {
   intialRobot: userRobots;
@@ -35,15 +37,45 @@ type RobotControRoomPros = {
 export default function RobotControRoom({ intialRobot }: RobotControRoomPros) {
   const [robot] = useState(intialRobot);
   const streamUrl = useRobotStream(robot);
-  const { status, toggleMode } = useRobotStatus(robot?.serialNo);
-  const [isAutonomous, setIsAutonomous] = useState(status === "autonomous");
+  const { status, toggleRobotControl, setRobotTwist } = useRobotStatus(
+    robot?.serialNo
+  );
+
+  const [isAutonomous, setIsAutonomous] = useState(status !== "autonomous");
   const [isRecording, setIsRecording] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [volume, setVolume] = useState([75]);
   const [zoom, setZoom] = useState([100]);
 
-  function handleToggling(checked: boolean) {
-    toggleMode(checked);
+  function handleRobotMove(pressed: keyTpes) {
+    console.log("presed ", pressed);
+    switch (pressed) {
+      case "w":
+      case "arrowup":
+        setRobotTwist({ z: 0.0, x: 1 });
+        break;
+      case "s":
+      case "arrowdown":
+        setRobotTwist({ z: 0.0, x: -1 });
+        break;
+
+      case "a":
+      case "arrowleft":
+        setRobotTwist({ z: 1.5, x: 0.0 });
+        break;
+
+      case "d":
+      case "arrowright":
+        setRobotTwist({ z: -1.5, x: 0.0 });
+        break;
+
+      default:
+        setRobotTwist({ z: 0.0, x: 0.0 });
+        break;
+    }
+  }
+  function handleRobot(checked: boolean) {
+    toggleRobotControl(checked);
   }
 
   if (!robot) {
@@ -108,14 +140,16 @@ export default function RobotControRoom({ intialRobot }: RobotControRoomPros) {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="bg-transparent">
+                      className="bg-transparent"
+                    >
                       <Maximize className="w-4 h-4" />
                     </Button>
                     <Button
                       size="sm"
                       variant={isRecording ? "destructive" : "outline"}
                       onClick={() => setIsRecording(!isRecording)}
-                      className={isRecording ? "" : "bg-transparent"}>
+                      className={isRecording ? "" : "bg-transparent"}
+                    >
                       {isRecording ? (
                         <Pause className="w-4 h-4" />
                       ) : (
@@ -150,7 +184,8 @@ export default function RobotControRoom({ intialRobot }: RobotControRoomPros) {
                         size="sm"
                         variant="outline"
                         onClick={() => setIsMuted(!isMuted)}
-                        className="bg-transparent">
+                        className="bg-transparent"
+                      >
                         {isMuted ? (
                           <VolumeX className="w-4 h-4" />
                         ) : (
@@ -193,7 +228,8 @@ export default function RobotControRoom({ intialRobot }: RobotControRoomPros) {
             </Card>
 
             <Controller
-              handleTogeling={handleToggling}
+              hanleTwist={handleRobotMove}
+              handleTogeling={handleRobot}
               isAutonomous={isAutonomous}
               setIsAutonomous={setIsAutonomous}
             />
@@ -258,7 +294,8 @@ export default function RobotControRoom({ intialRobot }: RobotControRoomPros) {
                   <Button
                     size="sm"
                     variant="outline"
-                    className="bg-transparent">
+                    className="bg-transparent"
+                  >
                     <MapPin className="w-4 h-4 mr-2" />
                     View Full Map
                   </Button>

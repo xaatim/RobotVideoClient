@@ -40,3 +40,14 @@ const formatLastSeen = (dateString: string) => {
 };
 
 
+export  type keyTpes =
+  | "w"
+  | "a"
+  | "s"
+  | "d"
+  | "arrowup"
+  | "arrowdown"
+  | "arrowleft"
+  | "arrowright"
+  | "stop"
+  | null;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
   ArrowUp,
@@ -22,55 +22,45 @@ import { Button } from "./ui/button";
 import { Label } from "./ui/label";
 import { Switch } from "./ui/switch";
 import { Badge } from "./ui/badge";
+import { keyTpes } from "@/lib/utils";
 
 interface ControllerProps {
   isAutonomous: boolean;
-  setIsAutonomous: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsAutonomous: Dispatch<SetStateAction<boolean>>;
   handleTogeling: (state: boolean) => void;
+  hanleTwist: (key: keyTpes) => void;
 }
 
+const keys: keyTpes[] = [
+  "a",
+  "arrowdown",
+  "arrowleft",
+  "arrowright",
+  "d",
+  "s",
+  "w",
+];
 export function Controller({
   isAutonomous,
   setIsAutonomous,
   handleTogeling,
+  hanleTwist,
 }: ControllerProps) {
-  const [activeKey, setActiveKey] = useState<string | null>(null);
+  const [activeKey, setActiveKey] = useState<keyTpes | null>(null);
 
+  console.log("aut:", isAutonomous);
   useEffect(() => {
+    if (isAutonomous) return;
     const handleKeyDown = (e: KeyboardEvent) => {
-      const key = e.key.toLowerCase();
-      if (
-        [
-          "w",
-          "a",
-          "s",
-          "d",
-          "arrowup",
-          "arrowdown",
-          "arrowleft",
-          "arrowright",
-        ].includes(key)
-      ) {
-        e.preventDefault();
-        setActiveKey(key);
-        toast.success(key.toUpperCase());
+      const pressed = e.key.toLowerCase() as keyTpes;
+      if (keys.includes(pressed)) {
+        hanleTwist(pressed);
       }
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
-      const key = e.key.toLowerCase();
-      if (
-        [
-          "w",
-          "a",
-          "s",
-          "d",
-          "arrowup",
-          "arrowdown",
-          "arrowleft",
-          "arrowright",
-        ].includes(key)
-      ) {
+      const key = e.key.toLowerCase() as keyTpes;
+      if (keys.includes(key)) {
         setActiveKey(null);
       }
     };
@@ -82,7 +72,7 @@ export function Controller({
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
-  }, []);
+  }, [isAutonomous,hanleTwist]);
 
   const isActive = (keys: string[]) => keys.includes(activeKey || "");
 
@@ -99,10 +89,7 @@ export function Controller({
       <CardContent>
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <Label
-              htmlFor="autonomous-mode"
-              className="text-card-foreground"
-            >
+            <Label htmlFor="autonomous-mode" className="text-card-foreground">
               Autonomous Mode
             </Label>
             <Switch
@@ -146,7 +133,9 @@ export function Controller({
                 </Button>
                 <Button
                   size="lg"
-                  variant={isActive(["d", "arrowright"]) ? "default" : "outline"}
+                  variant={
+                    isActive(["d", "arrowright"]) ? "default" : "outline"
+                  }
                   className="w-16 h-16 bg-transparent"
                 >
                   <ArrowRight className="w-6 h-6" />

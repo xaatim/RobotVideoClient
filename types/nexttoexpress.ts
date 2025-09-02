@@ -10,9 +10,13 @@ export interface Robot {
   ownerId: string;
 }
 
-export type robotMode = "autonomous" | "manual"
+export type robotMode = "autonomous" | "manual";
+export type RobotControl = {
+  mode:robotMode,
+  twist?:TwistMessage
+}
 interface ServerToRobotEvent {
-  "robot:controlMode": (mode: robotMode) => void;
+  "robot:controlMode": (RobotControlData:RobotControl) => void;
 }
 interface RobotToServerEvent {
   "robot:status": (mode: robotMode) => void;
@@ -28,10 +32,7 @@ export interface ServerToClientEvents extends ServerToRobotEvent {
 export interface ClientToServerEvents extends RobotToServerEvent {
   "robot:join": (data: { serialNo: string }) => void;
   "robot:requestStream": (data: { serialNo: string }) => void;
-  "robot:controlMode": (msg: {
-    mode: robotMode;
-    serialNo: string;
-  }) => void;
+  "robot:controlMode": (msg: { RobotControlData:RobotControl; serialNo: string }) => void;
 }
 
 export interface AuthenticatedSocket
@@ -40,3 +41,8 @@ export interface AuthenticatedSocket
   robot?: robotType;
 }
 export type Connecting = "connected" | "disconnected" | "connecting";
+export type TwistMessage = {
+  x: number;
+  z: number;
+
+};
