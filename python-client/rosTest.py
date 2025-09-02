@@ -4,7 +4,7 @@ import socketio
 import cv2
 import time
 
-io = socketio.Client()
+io = socketio.Client(reconnection=True,reconnection_attempts=10,reconnection_delay=20)
 
 
 @io.event
@@ -41,7 +41,7 @@ def send_frame(frame):
     # print(buf.tobytes())
 io.connect(
     'http://localhost:4000',
-    auth={'serialNo': "BR100-SN-0014", 'robotKey': 'fmw3icuareacx1t0zuo3il'},
+    auth={'serialNo': "BR100-SN-0001", 'robotKey': '7zwf6wokpc9f0mgp1twz94'},
     
 )
 try:
@@ -53,8 +53,10 @@ try:
         send_frame(frame)
         time.sleep(1/60)
 
-    cap.release()
     io.wait()
 except KeyboardInterrupt:
-    sys.exit(0)
+    print("exiting")
+finally:
+    io.disconnect()
     cap.release()
+    
