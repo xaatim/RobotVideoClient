@@ -1,10 +1,4 @@
 "use client";
-import {
-  ChevronUp,
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -19,9 +13,6 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import {
-  Shield,
-  Sprout,
-  GraduationCap,
   Battery,
   MapPin,
   Activity,
@@ -36,25 +27,10 @@ import {
 import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
 import { userRobots } from "@/lib/serverq";
-import RobotOwnershipDialog from "./RobotOwnershipDialog";
-import { toast } from "sonner";
-import { Switch } from "./ui/switch";
 import { useSocket } from "./useWebsocket";
-import VideoWebsocket from "./WebsocketVideo";
 import { Connecting } from "../../types/nexttoexpress";
+import { RobotSelector } from "./RobotSelector";
 
-const getTypeIcon = (type: string) => {
-  switch (type) {
-    case "surveillance":
-      return <Shield className="w-4 h-4" />;
-    case "agricultural":
-      return <Sprout className="w-4 h-4" />;
-    case "exam_monitoring":
-      return <GraduationCap className="w-4 h-4" />;
-    default:
-      return <Activity className="w-4 h-4" />;
-  }
-};
 
 export default function UserDashboardComps({
   allRobots,
@@ -65,7 +41,7 @@ export default function UserDashboardComps({
   const session = authClient.useSession().data;
   const [open, setOpen] = useState(false);
   const [connected, setConnected] = useState<Connecting>("connecting");
-  const { on, emit, socket } = useSocket();
+  const { on, emit } = useSocket();
   const [streamUrl, setStreamUrl] = useState<string>("");
 
   const [robotStatus, setRobotStatus] = useState<
@@ -115,6 +91,14 @@ export default function UserDashboardComps({
       };
     }
   }, [selectedRobot]);
+  function handleTogeling(checked: boolean) {
+    setIsUserToggling(checked);
+    emit("robot:controlMode", {
+      mode: checked ? "manual" : "autonomous",
+      serialNo: selectedRobot?.serialNo!,
+    });
+  }
+
   return (
     <div className="w-full h-full bg-gradient-to-br">
       <nav className="border-b  backdrop-blur">
@@ -194,7 +178,7 @@ export default function UserDashboardComps({
             </CardContent>
           </Card>
         </div>
-        <RobotOwnershipDialog open={open} setOpen={setOpen} />
+        {/* <RobotOwnershipDialog open={open} setOpen={setOpen} /> */}
 
         {allRobots.length === 0 ? (
           <Card className="">
@@ -216,115 +200,13 @@ export default function UserDashboardComps({
           </Card>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Robot Fleet */}
-            <div className="lg:col-span-1">
-              <div className="flex flex-col gap-3">
-                <Card className="">
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <CardTitle className="text-slate-200">
-                          Robot Fleet
-                        </CardTitle>
-                        <CardDescription className="text-slate-400">
-                          Manage and monitor your robots
-                        </CardDescription>
-                      </div>
-                      <Button
-                        onClick={() => setOpen((prev) => !prev)}
-                        size="sm"
-                        className="bg-emerald-600 hover:bg-emerald-700"
-                      >
-                        <Plus className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {allRobots.map((robot) => (
-                      <div
-                        key={robot.id}
-                        className={`p-4 rounded-lg border cursor-pointer transition-colors ${
-                          selectedRobot?.id === robot.id
-                            ? "border-emerald-500 bg-emerald-500/10"
-                            : "border-slate-600 hover:bg-slate-700/50"
-                        }`}
-                        onClick={() => {
-                          setSelectedRobot(robot);
-                        }}
-                      >
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center space-x-2">
-                            {getTypeIcon(robot.modelRelation.modelType)}
-                            <span className="font-medium text-sm text-slate-200">
-                              {robot.customName}
-                            </span>
-                          </div>
-                          {/* <div className={`w-2 h-2 rounded-full ${getStatusColor(robot.status)}`} /> */}
-                        </div>
-                        <div className="space-y-1 text-xs text-slate-400">
-                          <div className="flex items-center space-x-1">
-                            <Battery className="w-3 h-3" />
-                            <span>100%</span>
-                          </div>
-                          <div className="flex items-center space-x-1">
-                            <MapPin className="w-3 h-3" />
-                            <span>location</span>
-                          </div>
-                          <div className="text-xs text-slate-500">
-                            ID: {robot.serialNo}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </CardContent>
-                </Card>
-                {/* here */}
-
-                {selectedRobot && (
-                  <Card className="">
-                    <CardHeader>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <CardTitle className="text-slate-200">
-                            Switch Control
-                          </CardTitle>
-                        </div>
-                        <div className="flex flex-row-reverse gap-2 items-center">
-                          Manual Control
-                          <Switch
-                            checked={
-                              isUserToggling
-                                ? robotStatus !== "manual"
-                                : robotStatus === "manual"
-                            }
-                            onCheckedChange={(checked) => {
-                              setIsUserToggling(true);
-                              emit("robot:controlMode", {
-                                mode: checked ? "manual" : "autonomous",
-                                serialNo: selectedRobot.serialNo,
-                              });
-                            }}
-                          />
-                          <Button
-                            onClick={() => setOpen((prev) => !prev)}
-                            size="sm"
-                            variant={"destructive"}
-                            className="text-xs"
-                          >
-                            Emergency Stop
-                          </Button>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="space-y-4 min-w-40 min-h-40 flex flex-col justify-center items-center">
-                      <Controls toggleState={isUserToggling} />
-                    </CardContent>
-                  </Card>
-                )}
-              </div>
-            </div>
-
-            {/* Live Feed & Controls */}
+            <RobotSelector
+              allRobots={allRobots}
+              handleTogeling={handleTogeling}
+              isUserToggling={isUserToggling}
+              selectedRobot={selectedRobot!}
+              setSelectedRobot={setSelectedRobot}
+            />
             <div className="lg:col-span-2">
               {selectedRobot && (
                 <Card className="">
@@ -334,8 +216,12 @@ export default function UserDashboardComps({
                         <CardTitle className="text-slate-200">
                           {selectedRobot.customName}
                         </CardTitle>
-                        <CardDescription className="text-slate-400">
-                          Live camera feed and controls
+                        <CardDescription className="text-slate-400 flex flex-col gap-2 ">
+                          <p>Live camera feed and controls</p>
+                          <p className="text-muted-foreground text-xs">
+                            current robot stats:
+                          </p>
+                          {robotStatus && <Badge>{robotStatus}</Badge>}
                         </CardDescription>
                       </div>
                       <div className="flex items-center space-x-2">
@@ -477,101 +363,3 @@ export default function UserDashboardComps({
   );
 }
 
-export function Controls({ toggleState }: { toggleState: boolean }) {
-  const [activeKey, setActiveKey] = useState<string | null>(null);
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const key = e.key.toLowerCase();
-      if (
-        [
-          "w",
-          "a",
-          "s",
-          "d",
-          "arrowup",
-          "arrowdown",
-          "arrowleft",
-          "arrowright",
-        ].includes(key)
-      ) {
-        e.preventDefault();
-        setActiveKey(key);
-        toast.success(activeKey);
-      }
-    };
-
-    const handleKeyUp = (e: KeyboardEvent) => {
-      const key = e.key.toLowerCase();
-      if (
-        [
-          "w",
-          "a",
-          "s",
-          "d",
-          "arrowup",
-          "arrowdown",
-          "arrowleft",
-          "arrowright",
-        ].includes(key)
-      ) {
-        setActiveKey(null);
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    window.addEventListener("keyup", handleKeyUp);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-      window.removeEventListener("keyup", handleKeyUp);
-    };
-  }, []);
-
-  const isActive = (keys: string[]) => keys.includes(activeKey || "");
-
-  return (
-    <div className="flex flex-col items-center justify-center gap-2">
-      <div className={`${!toggleState && "cursor-not-allowed"} `}>
-        <Button
-          disabled={!toggleState}
-          variant={isActive(["w", "arrowup"]) ? "default" : "outline"}
-          size="lg"
-          className={`h-12 w-12 p-0 ${!toggleState && "cusor-a"}`}
-        >
-          <ChevronUp className="h-6 w-6" />
-        </Button>
-      </div>
-      <div
-        className={`flex gap-3 items-center ${
-          !toggleState && "cursor-not-allowed"
-        }`}
-      >
-        <Button
-          disabled={!toggleState}
-          variant={isActive(["a", "arrowleft"]) ? "default" : "outline"}
-          size="lg"
-          className="h-12 w-12 p-0"
-        >
-          <ChevronLeft className="h-6 w-6" />
-        </Button>
-        <Button
-          disabled={!toggleState}
-          variant={isActive(["s", "arrowdown"]) ? "default" : "outline"}
-          size="lg"
-          className="h-12 w-12 p-0"
-        >
-          <ChevronDown className="h-6 w-6" />
-        </Button>
-        <Button
-          disabled={!toggleState}
-          variant={isActive(["d", "arrowright"]) ? "default" : "outline"}
-          size="lg"
-          className="h-12 w-12 p-0"
-        >
-          <ChevronRight className="h-6 w-6" />
-        </Button>
-      </div>
-    </div>
-  );
-}

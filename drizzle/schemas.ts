@@ -5,14 +5,12 @@ import {
   timestamp,
   boolean,
   varchar,
-  uuid,
-  integer,
-  decimal,
   serial,
   pgEnum,
   pgSequence,
 } from "drizzle-orm/pg-core";
 export type robotType = typeof robotsTable.$inferSelect;
+export type userType = typeof user.$inferSelect;
 export type robotModels = typeof robotModelTable.$inferSelect;
 export const userRole = pgEnum("role", ["ADMIN", "USER"]);
 export type userRoleType = (typeof userRole.enumValues)[number];

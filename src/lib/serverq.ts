@@ -27,6 +27,18 @@ export async function getUserRobots(userId: string) {
     with: { modelRelation: true },
   });
 }
+export async function getUserRobot(userId: string, robotId: number) {
+  try {
+    const result = await db.query.robotsTable.findFirst({
+      where: (tb, fn) =>
+        fn.and(fn.eq(tb.ownerId, userId), fn.eq(tb.id, robotId)),
+      with: { modelRelation: true },
+    });
+    return result
+  } catch (error) {
+    console.log(error)
+  }
+}
 type updateRobotProp = {
   values: robotOwnershipSchemaData;
   userId: string;
@@ -166,4 +178,11 @@ export async function deleteRobot(serialNo: string) {
     console.log(error);
     throw new Error("unable to delete robot record");
   }
+}
+
+export async function getServerReturnUrl() {
+  const headersList = await headers();
+  const referer =
+    headersList.get("referer") ?? `${process.env.BETTER_AUTH_URL}/dashboard/`;
+  return referer;
 }
