@@ -9,8 +9,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -20,39 +18,15 @@ import {
   MapPin,
   Video,
   Zap,
-  Trash2,
-  LogOut,
 } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 import { userRobots } from "@/lib/serverq";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "./ui/avatar";
-import { toast } from "sonner";
-import { DropdownMenuLabel } from "@radix-ui/react-dropdown-menu";
-import { authClient } from "@/lib/auth-client";
-import { useRouter } from "next/navigation";
 import RobotOwnershipDialog from "./RobotOwnershipDialog";
-import { ModeToggle } from "./themeTogle";
-type userType = {
-  id: string;
-  email: string;
-  emailVerified: boolean;
-  name: string;
-  createdAt: Date;
-  updatedAt: Date;
-  image?: string | null | undefined;
-  role: string | null | undefined;
-};
+import ProfileComps from "./ProfileComps";
+
 type RobotCompsProps = {
   robots: userRobots[];
-  user: userType;
 };
 const getTypeIcon = (type: string) => {
   switch (type) {
@@ -66,10 +40,8 @@ const getTypeIcon = (type: string) => {
       return <Settings className="w-5 h-5" />;
   }
 };
-export default function RobotComps({ robots, user }: RobotCompsProps) {
-  const [showRegistrationForm, setShowRegistrationForm] = useState(false);
+export default function RobotComps({ robots }: RobotCompsProps) {
   const [open, setOpen] = useState(false);
-  const router = useRouter();
   return (
     <div className="w-full h-full text-foreground">
       <RobotOwnershipDialog open={open} setOpen={setOpen} />
@@ -87,50 +59,11 @@ export default function RobotComps({ robots, user }: RobotCompsProps) {
             <div className="flex items-center gap-3">
               <Button
                 onClick={() => setOpen((prev) => !prev)}
-                className="bg-primary hover:bg-primary/90"
-              >
+                className="bg-primary hover:bg-primary/90">
                 <Plus className="w-4 h-4 mr-2" />
                 Register Robot
               </Button>
-              <DropdownMenu>
-                <DropdownMenuTrigger >
-                  <Avatar>
-                    <AvatarFallback>
-                      {user.name.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-60">
-                  <div className="flex items-center gap-2">
-                    <Avatar>
-                      <AvatarFallback>
-                        {user.name.charAt(0).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex flex-col ">
-                      <span className="text-xs ">{user.name}</span>
-                      <span>{user.email}</span>
-                    </div>
-                  </div>
-                  <DropdownMenuSeparator></DropdownMenuSeparator>
-                  <DropdownMenuItem
-                    onClick={() =>
-                      authClient.signOut({
-                        fetchOptions: {
-                          onSuccess: () => {
-                            router.push("/");
-                          },
-                        },
-                      })
-                    }
-                  >
-                    <LogOut />
-                    Logout
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              <ModeToggle/>
+              <ProfileComps />
             </div>
           </div>
         </div>
@@ -193,8 +126,7 @@ export default function RobotComps({ robots, user }: RobotCompsProps) {
               {robots.map((robot) => (
                 <Card
                   key={robot.id}
-                  className="bg-card border-border hover:shadow-lg transition-shadow"
-                >
+                  className="bg-card border-border hover:shadow-lg transition-shadow">
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
@@ -211,7 +143,7 @@ export default function RobotComps({ robots, user }: RobotCompsProps) {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Badge className="text-xs" >online</Badge>
+                        <Badge className="text-xs">online</Badge>
                       </div>
                     </div>
                   </CardHeader>
@@ -239,11 +171,7 @@ export default function RobotComps({ robots, user }: RobotCompsProps) {
                     <Separator className="bg-border" />
 
                     <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        className="flex-1"
-                        asChild
-                      >
+                      <Button size="sm" className="flex-1" asChild>
                         <Link href={`/dashboard/user/${robot.id}`}>
                           <Video className="w-4 h-4 mr-2" />
                           Control
