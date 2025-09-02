@@ -1,6 +1,6 @@
 import RobotComps from "@/components/RobotComps";
 // import UserDashboardComps from "@/components/UserDashboardComps";
-import { Auth, getAllRobotModels, getUserRobots } from "@/lib/serverq";
+import { Auth, getUserRobots } from "@/lib/serverq";
 import React from "react";
 
 export default async function Page() {
@@ -8,5 +8,5 @@ export default async function Page() {
   if (!session) return;
   const allUserRobot = await getUserRobots(session?.user.id);
 
-  return <RobotComps robots={allUserRobot} user={session.user!} />;
+  return <RobotComps robots={allUserRobot} />;
 }
