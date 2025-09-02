@@ -10,26 +10,26 @@ export interface Robot {
   ownerId: string;
 }
 
-
+export type robotMode = "autonomous" | "manual"
 interface ServerToRobotEvent {
-  "robot:controlMode": (mode: "autonomous" | "manual") => void;
+  "robot:controlMode": (mode: robotMode) => void;
 }
 interface RobotToServerEvent {
-  "robot:status": (mode: "autonomous" | "manual") => void;
+  "robot:status": (mode: robotMode) => void;
   "robot:frame": (frame: Uint8Array) => void;
 }
 
 export interface ServerToClientEvents extends ServerToRobotEvent {
   "robot:stream": (frame: Uint8Array) => void;
   "robot:streamStop": (msg: { serialNo: string }) => void;
-  "robot:statusUpdate": (mode: "autonomous" | "manual") => void;
+  "robot:statusUpdate": (mode: robotMode) => void;
   error: (msg: string) => void;
 }
 export interface ClientToServerEvents extends RobotToServerEvent {
   "robot:join": (data: { serialNo: string }) => void;
   "robot:requestStream": (data: { serialNo: string }) => void;
   "robot:controlMode": (msg: {
-    mode: "autonomous" | "manual";
+    mode: robotMode;
     serialNo: string;
   }) => void;
 }
