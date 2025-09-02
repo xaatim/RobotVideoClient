@@ -23,13 +23,11 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { userRobots } from "@/lib/serverq";
-import { useSocketIo } from "../hooks/useSocketIo";
 import GoogleMap from "./Googlemap";
 import { Controller } from "./Controls";
 import { useRobotStream } from "../hooks/useRobotStream";
 import { useRobotStatus } from "@/hooks/useRobotStatus";
 import { keyTpes } from "@/lib/utils";
-import { toast } from "sonner";
 
 type RobotControRoomPros = {
   intialRobot: userRobots;
