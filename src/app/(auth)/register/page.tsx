@@ -18,22 +18,12 @@ import { signUp } from "@/lib/auth-client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { getAllRobotModels, updateRobotOwnerShip } from "@/lib/serverq";
-import {
-  RobotModelDropDown,
-} from "@/components/RobotModelDropDown";
-import { useQuery } from "@tanstack/react-query";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { RobotFormData } from "@/lib/zodTypes";
 
 export default function SignUp() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [robotID, setRobotID] = useState("");
-  const [robotKey, setRobotKey] = useState("");
   const [passwordConfirmation, setPasswordConfirmation] = useState("");
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -51,10 +41,6 @@ export default function SignUp() {
       reader.readAsDataURL(file);
     }
   };
-  const { data: allModels, isPending } = useQuery({
-    queryKey: ["robots"],
-    queryFn: getAllRobotModels,
-  });
 
   return (
     <Card className="z-50 rounded-lg  max-w-md">
