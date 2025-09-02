@@ -42,7 +42,7 @@ def send_frame(frame):
 io.connect(
     'http://localhost:4000',
     auth={'serialNo': "BR100-SN-0014", 'robotKey': 'fmw3icuareacx1t0zuo3il'},
-    transports=["websocket"]
+    
 )
 try:
     while cap.isOpened():
