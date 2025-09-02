@@ -40,7 +40,7 @@ import { userRobots } from "@/lib/serverq";
 import { useSocket } from "./useWebsocket";
 import { Controls } from "./Controls";
 import useStream from "@/hooks/useStream";
-import { MyComponent } from "./Googlemap";
+import GoogleMap from "./Googlemap";
 
 type RobotControRoomPros = {
   robot: userRobots;
@@ -361,7 +361,7 @@ export default function RobotControRoom({ robot }: RobotControRoomPros) {
               </CardHeader>
               <CardContent>
                 <div className="aspect-square bg-muted rounded-lg relative overflow-hidden">
-                 <MyComponent />
+                 <GoogleMap />
                 </div>
                 <div className="mt-3 text-center">
                   <Button
