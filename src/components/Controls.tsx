@@ -1,9 +1,39 @@
+"use client";
+
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import {
+  ArrowUp,
+  ArrowDown,
+  ArrowLeft,
+  ArrowRight,
+  RotateCcw,
+  RotateCw,
+  Pause,
+} from "lucide-react";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "./ui/card";
 import { Button } from "./ui/button";
-import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp } from "lucide-react";
+import { Label } from "./ui/label";
+import { Switch } from "./ui/switch";
+import { Badge } from "./ui/badge";
 
-export function Controls({ toggleState }: { toggleState: boolean }) {
+interface ControllerProps {
+  isAutonomous: boolean;
+  setIsAutonomous: React.Dispatch<React.SetStateAction<boolean>>;
+  handleTogeling: (state: boolean) => void;
+}
+
+export function Controller({
+  isAutonomous,
+  setIsAutonomous,
+  handleTogeling,
+}: ControllerProps) {
   const [activeKey, setActiveKey] = useState<string | null>(null);
 
   useEffect(() => {
@@ -23,7 +53,7 @@ export function Controls({ toggleState }: { toggleState: boolean }) {
       ) {
         e.preventDefault();
         setActiveKey(key);
-        toast.success(activeKey);
+        toast.success(key.toUpperCase());
       }
     };
 
@@ -57,138 +87,94 @@ export function Controls({ toggleState }: { toggleState: boolean }) {
   const isActive = (keys: string[]) => keys.includes(activeKey || "");
 
   return (
-    <div className="flex flex-col items-center justify-center gap-2">
-      <div className={`${!toggleState && "cursor-not-allowed"} `}>
-        <Button
-          disabled={!toggleState}
-          variant={isActive(["w", "arrowup"]) ? "default" : "outline"}
-          size="lg"
-          className={`h-12 w-12 p-0 ${!toggleState && "cusor-a"}`}
-        >
-          <ChevronUp className="h-6 w-6" />
-        </Button>
-      </div>
-      <div
-        className={`flex gap-3 items-center ${
-          !toggleState && "cursor-not-allowed"
-        }`}
-      >
-        <Button
-          disabled={!toggleState}
-          variant={isActive(["a", "arrowleft"]) ? "default" : "outline"}
-          size="lg"
-          className="h-12 w-12 p-0"
-        >
-          <ChevronLeft className="h-6 w-6" />
-        </Button>
-        <Button
-          disabled={!toggleState}
-          variant={isActive(["s", "arrowdown"]) ? "default" : "outline"}
-          size="lg"
-          className="h-12 w-12 p-0"
-        >
-          <ChevronDown className="h-6 w-6" />
-        </Button>
-        <Button
-          disabled={!toggleState}
-          variant={isActive(["d", "arrowright"]) ? "default" : "outline"}
-          size="lg"
-          className="h-12 w-12 p-0"
-        >
-          <ChevronRight className="h-6 w-6" />
-        </Button>
-      </div>
-    </div>
+    <Card className="bg-card border-border">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-lg text-card-foreground">
+          Movement Controls
+        </CardTitle>
+        <CardDescription className="text-muted-foreground">
+          Use WASD keys or click buttons to control robot movement
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <Label
+              htmlFor="autonomous-mode"
+              className="text-card-foreground"
+            >
+              Autonomous Mode
+            </Label>
+            <Switch
+              id="autonomous-mode"
+              checked={isAutonomous}
+              onCheckedChange={() => {
+                setIsAutonomous((prev) => !prev);
+                handleTogeling(isAutonomous);
+              }}
+            />
+          </div>
+          <Badge variant={isAutonomous ? "default" : "secondary"}>
+            {isAutonomous ? "Autonomous" : "Manual"}
+          </Badge>
+        </div>
+
+        {!isAutonomous && (
+          <div className="space-y-4">
+            <div className="flex flex-col items-center gap-2">
+              <Button
+                size="lg"
+                variant={isActive(["w", "arrowup"]) ? "default" : "outline"}
+                className="w-16 h-16 bg-transparent"
+              >
+                <ArrowUp className="w-6 h-6" />
+              </Button>
+              <div className="flex gap-2">
+                <Button
+                  size="lg"
+                  variant={isActive(["a", "arrowleft"]) ? "default" : "outline"}
+                  className="w-16 h-16 bg-transparent"
+                >
+                  <ArrowLeft className="w-6 h-6" />
+                </Button>
+                <Button
+                  size="lg"
+                  variant={isActive(["s", "arrowdown"]) ? "default" : "outline"}
+                  className="w-16 h-16 bg-transparent"
+                >
+                  <ArrowDown className="w-6 h-6" />
+                </Button>
+                <Button
+                  size="lg"
+                  variant={isActive(["d", "arrowright"]) ? "default" : "outline"}
+                  className="w-16 h-16 bg-transparent"
+                >
+                  <ArrowRight className="w-6 h-6" />
+                </Button>
+              </div>
+            </div>
+
+            <div className="flex justify-center gap-3">
+              <Button variant="outline" size="sm" className="bg-transparent">
+                <RotateCcw className="w-4 h-4 mr-2" />
+                Rotate Left
+              </Button>
+              <Button variant="outline" size="sm" className="bg-transparent">
+                <RotateCw className="w-4 h-4 mr-2" />
+                Rotate Right
+              </Button>
+              <Button variant="outline" size="sm" className="bg-transparent">
+                <Pause className="w-4 h-4 mr-2" />
+                Stop
+              </Button>
+            </div>
+
+            <div className="text-center text-sm text-muted-foreground">
+              Press W/A/S/D keys for keyboard control
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
-
-
-// <div className="space-y-4">
-//                     {/* Directional Controls */}
-//                     <div className="flex flex-col items-center gap-2">
-//                       <Button
-//                         size="lg"
-//                         variant="outline"
-//                         className={`w-16 h-16 bg-transparent ${
-//                           pressedKeys.has("w")
-//                             ? "bg-primary text-primary-foreground"
-//                             : ""
-//                         }`}
-//                         onMouseDown={() => handleDirectionalControl("forward")}
-//                       >
-//                         <ArrowUp className="w-6 h-6" />
-//                       </Button>
-//                       <div className="flex gap-2">
-//                         <Button
-//                           size="lg"
-//                           variant="outline"
-//                           className={`w-16 h-16 bg-transparent ${
-//                             pressedKeys.has("a")
-//                               ? "bg-primary text-primary-foreground"
-//                               : ""
-//                           }`}
-//                           onMouseDown={() => handleDirectionalControl("left")}
-//                         >
-//                           <ArrowLeft className="w-6 h-6" />
-//                         </Button>
-//                         <Button
-//                           size="lg"
-//                           variant="outline"
-//                           className={`w-16 h-16 bg-transparent ${
-//                             pressedKeys.has("s")
-//                               ? "bg-primary text-primary-foreground"
-//                               : ""
-//                           }`}
-//                           onMouseDown={() =>
-//                             handleDirectionalControl("backward")
-//                           }
-//                         >
-//                           <ArrowDown className="w-6 h-6" />
-//                         </Button>
-//                         <Button
-//                           size="lg"
-//                           variant="outline"
-//                           className={`w-16 h-16 bg-transparent ${
-//                             pressedKeys.has("d")
-//                               ? "bg-primary text-primary-foreground"
-//                               : ""
-//                           }`}
-//                           onMouseDown={() => handleDirectionalControl("right")}
-//                         >
-//                           <ArrowRight className="w-6 h-6" />
-//                         </Button>
-//                       </div>
-//                     </div>
-
-//                     {/* Additional Controls */}
-//                     <div className="flex justify-center gap-3">
-//                       <Button
-//                         variant="outline"
-//                         size="sm"
-//                         className="bg-transparent"
-//                       >
-//                         <RotateCcw className="w-4 h-4 mr-2" />
-//                         Rotate Left
-//                       </Button>
-//                       <Button
-//                         variant="outline"
-//                         size="sm"
-//                         className="bg-transparent"
-//                       >
-//                         <RotateCw className="w-4 h-4 mr-2" />
-//                         Rotate Right
-//                       </Button>
-//                       <Button
-//                         variant="outline"
-//                         size="sm"
-//                         className="bg-transparent"
-//                       >
-//                         <Pause className="w-4 h-4 mr-2" />
-//                         Stop
-//                       </Button>
-//                     </div>
-
-//                     <div className="text-center text-sm text-muted-foreground">
-//                       Press W/A/S/D keys for keyboard control
-//                     </div>
-//                   </div>
