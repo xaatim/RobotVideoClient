@@ -1,48 +1,52 @@
 "use client";
-import { APIProvider, Map, Marker, useMap, } from "@vis.gl/react-google-maps";
+import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
+import L from "leaflet";
 import robotIcon from "../../public/robot.svg";
 import { useEffect, useState } from "react";
-export default function GoogleMap() {
-  
-  return (
-    <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAP_kEY!}>
-      <Map
-        style={{ width: "100vw", height: "100vh" }}
-        defaultZoom={17.12}
 
-        defaultCenter={{ lat: 1.85797, lng: 103.09355 }}
-        gestureHandling={"greedy"}
-        
-        
-      >
-      
-        <MovingMarker />
-      </Map>
-    </APIProvider>
+const customIcon = new L.Icon({
+  iconUrl: robotIcon.src,
+  iconSize: [40, 40],
+  iconAnchor: [20, 40],
+});
+
+export default function OpenStreetMap() {
+  return (
+    <MapContainer
+      center={[1.85797, 103.09355]}
+      zoom={17}
+      style={{ width: "100vw", height: "100vh" }}
+    >
+      <TileLayer
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
+      />
+      <MovingMarker />
+    </MapContainer>
   );
 }
 
-export const MovingMarker = () => {
+const MovingMarker = () => {
   const path = [
-    { lat: 1.858626, lng: 103.0855782 }, // Starting point (UTHM main entrance)
-    { lat: 1.859000, lng: 103.0860000 },
-    { lat: 1.859500, lng: 103.0865000 },
-    { lat: 1.860000, lng: 103.0870000 },
-    { lat: 1.860500, lng: 103.0875000 },
-    { lat: 1.861000, lng: 103.0880000 },
-    { lat: 1.861500, lng: 103.0885000 },
-    { lat: 1.862000, lng: 103.0890000 },
-    { lat: 1.862500, lng: 103.0895000 },
-    { lat: 1.863000, lng: 103.0900000 },
+    { lat: 1.858626, lng: 103.0855782 },
+    { lat: 1.859, lng: 103.086 },
+    { lat: 1.8595, lng: 103.0865 },
+    { lat: 1.86, lng: 103.087 },
+    { lat: 1.8605, lng: 103.0875 },
+    { lat: 1.861, lng: 103.088 },
+    { lat: 1.8615, lng: 103.0885 },
+    { lat: 1.862, lng: 103.089 },
+    { lat: 1.8625, lng: 103.0895 },
+    { lat: 1.863, lng: 103.09 },
   ];
 
   const [positionIndex, setPositionIndex] = useState(0);
-  const [position, setPosition] = useState<google.maps.LatLngLiteral>(path[0]);
+  const [position, setPosition] = useState(path[0]);
 
   useEffect(() => {
     const interval = setInterval(() => {
       setPositionIndex((prevIndex) => (prevIndex + 1) % path.length);
-    }, 1000); // Move every 1 second
+    }, 1000);
 
     return () => clearInterval(interval);
   }, []);
@@ -51,13 +55,5 @@ export const MovingMarker = () => {
     setPosition(path[positionIndex]);
   }, [positionIndex]);
 
-  return (
-    <Marker
-      position={position}
-      icon={{
-        url: robotIcon.src,
-        scaledSize: new google.maps.Size(40, 40),
-      }}
-    ></Marker>
-  );
+  return <Marker position={position} icon={customIcon} />;
 };
