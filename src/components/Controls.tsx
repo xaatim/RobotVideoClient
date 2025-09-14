@@ -55,6 +55,8 @@ export function Controller({
       const pressed = e.key.toLowerCase() as keyTpes;
       if (keys.includes(pressed)) {
         hanleTwist(pressed);
+        setActiveKey(pressed);
+
       }
     };
 
@@ -110,24 +112,24 @@ export function Controller({
           <div className="space-y-4">
             <div className="flex flex-col items-center gap-2">
               <Button
-                size="lg"
-                variant={isActive(["w", "arrowup"]) ? "default" : "outline"}
-                className="w-16 h-16 bg-transparent"
-              >
+                  size="lg"
+                  variant={isActive(["w", "arrowup"]) ? "default" : "outline"}
+                  className={`w-16 h-16 bg-transparent ${isActive(["w", "arrowup"]) ? "shadow-lg" : ""}`}
+                >
                 <ArrowUp className="w-6 h-6" />
               </Button>
               <div className="flex gap-2">
                 <Button
                   size="lg"
                   variant={isActive(["a", "arrowleft"]) ? "default" : "outline"}
-                  className="w-16 h-16 bg-transparent"
+                  className={`w-16 h-16 bg-transparent ${isActive(["a", "arrowleft"]) ? "shadow-lg" : ""}`}
                 >
                   <ArrowLeft className="w-6 h-6" />
                 </Button>
                 <Button
                   size="lg"
                   variant={isActive(["s", "arrowdown"]) ? "default" : "outline"}
-                  className="w-16 h-16 bg-transparent"
+                  className={`w-16 h-16 bg-transparent ${isActive(["s", "arrowdown"]) ? "shadow-lg" : ""}`}
                 >
                   <ArrowDown className="w-6 h-6" />
                 </Button>
@@ -136,7 +138,7 @@ export function Controller({
                   variant={
                     isActive(["d", "arrowright"]) ? "default" : "outline"
                   }
-                  className="w-16 h-16 bg-transparent"
+                  className={`w-16 h-16 bg-transparent ${isActive(["d", "arrowright"]) ? "shadow-lg" : ""}`}
                 >
                   <ArrowRight className="w-6 h-6" />
                 </Button>

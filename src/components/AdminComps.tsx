@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { getAllUsers, getRobotsCountByModel } from "@/lib/serverq";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,6 +32,19 @@ import {
   Minus,
 } from "lucide-react";
 import { useForm } from "react-hook-form";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+} from "recharts";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import {
@@ -61,10 +75,39 @@ export default function AdminDashboard({
   Models: allModels;
 }) {
   const [newMdlToggle, setNewMdlToggle] = useState(false);
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [robotsByModelData, setRobotsByModelData] = useState<
+    { name: string; robots: number }[]
+  >([]);
   const router = useRouter();
   const totalRobots = intiRobots.length;
   const ownedRobots = intiRobots.filter((robot) => robot.owner?.name).length;
+  const unownedRobots = intiRobots.filter((robot) => !robot.owner?.name).length;
   const availableModels = Models.length;
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const users = await getAllUsers();
+      setTotalUsers(users.length);
+
+      const robotsByModel = await getRobotsCountByModel();
+      const mappedRobotsByModel = robotsByModel.map((item) => ({
+        name: item.model,
+        robots: item.count || 0,
+      }));
+      setRobotsByModelData(
+        mappedRobotsByModel as { name: string; robots: number }[]
+      );
+    };
+    fetchData();
+  }, []);
+
+  const robotOwnershipData = [
+    { name: "Owned", value: ownedRobots },
+    { name: "Unowned", value: unownedRobots },
+  ];
+
+  const COLORS = ["var(--chart-2)", "var(--chart-4)"];
   const latestRobotRef = useRef<HTMLTableRowElement>(null);
 
   useEffect(() => {
@@ -161,34 +204,114 @@ export default function AdminDashboard({
       </header>
 
       <div className="container mx-auto px-4 py-8">
-        <div className="grid gap-4 md:grid-cols-2 mb-8">
-          <Card className="">
+        <div className="grid gap-4 md:grid-cols-4 mb-8">
+          <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Robots
-              </CardTitle>
-              <Bot className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{totalRobots}</div>
-              <p className="text-xs text-muted-foreground">
-                {totalRobots === 0 ? "No robots yet" : "robots in inventory"}
-              </p>
+            <CardContent className="h-[200px] flex justify-center items-center">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={[{ name: "Total Users", value: totalUsers }]}>
+                  <XAxis dataKey="name" tick={{ fontSize: 15 }} />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar
+                    dataKey="value"
+                    fill="var(--chart-2)"
+                    radius={[4, 4, 0, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Available Models
+                Total Models
               </CardTitle>
               <Database className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{availableModels}</div>
-              <p className="text-xs text-muted-foreground">
-                {availableModels === 0 ? "No models available" : "model types"}
-              </p>
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart
+                  data={[{ name: "Total Models", value: availableModels }]}
+                >
+                  <XAxis dataKey="name" tick={{ fontSize: 15 }} />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar
+                    dataKey="value"
+                    fill="var(--chart-3)"
+                    radius={[4, 4, 0, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Robots by Model
+              </CardTitle>
+              <Bot className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={robotsByModelData}>
+                  <XAxis
+                    dataKey="name"
+                    angle={-90}
+                    textAnchor="end"
+                    tick={{ fontSize: 10 }}
+                    tickFormatter={(value: string) => value.split("-")[1]}
+                  />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar
+                    dataKey="robots"
+                    fill="var(--chart-4)"
+                    radius={[4, 4, 0, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Robot Ownership
+              </CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={200}>
+                <PieChart>
+                  <Pie
+                    data={robotOwnershipData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    outerRadius={80}
+                    fill="var(--chart-1)"
+                    label
+                    dataKey="value"
+                  >
+                    {robotOwnershipData.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={COLORS[index % COLORS.length]}
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
             </CardContent>
           </Card>
         </div>
@@ -208,7 +331,8 @@ export default function AdminDashboard({
                 </div>
                 <Button
                   onClick={() => setNewMdlToggle((prev) => !prev)}
-                  variant="outline">
+                  variant="outline"
+                >
                   {newMdlToggle ? (
                     <Minus className="h-4 w-4 mr-2" />
                   ) : (
@@ -224,7 +348,8 @@ export default function AdminDashboard({
                   <h4 className="font-medium mb-4">Add New Robot Model</h4>
                   <form
                     onSubmit={robotModelform.handleSubmit(onRobotModelSubmit)}
-                    className="space-y-4">
+                    className="space-y-4"
+                  >
                     <div className="space-y-2">
                       <Label htmlFor="model">Robot Model</Label>
                       <div className="flex gap-2">
@@ -267,7 +392,8 @@ export default function AdminDashboard({
                       <Button
                         type="submit"
                         className="w-full"
-                        disabled={isLoading}>
+                        disabled={isLoading}
+                      >
                         {isLoading ? (
                           <>
                             <Loader2 className="animate-spin" />
@@ -286,7 +412,8 @@ export default function AdminDashboard({
                 <h4 className="font-medium mb-4">Create New Robot</h4>
                 <form
                   onSubmit={robotForm.handleSubmit(onRobotSubmit)}
-                  className="space-y-4 flex flex-col">
+                  className="space-y-4 flex flex-col"
+                >
                   <RobotModelDropDown allModels={Models} form={robotForm} />
 
                   <div className="space-y-2">
@@ -305,7 +432,8 @@ export default function AdminDashboard({
                         type="button"
                         variant="outline"
                         size="icon"
-                        onClick={handleGenerateKey}>
+                        onClick={handleGenerateKey}
+                      >
                         <RefreshCw className="h-4 w-4" />
                       </Button>
                     </div>
@@ -323,7 +451,8 @@ export default function AdminDashboard({
             <CardFooter className="w-full ">
               <form
                 onSubmit={robotForm.handleSubmit(onRobotSubmit)}
-                className="w-full ">
+                className="w-full "
+              >
                 <Button type="submit" className="w-full" disabled={isPending}>
                   {isPending && (
                     <Loader2 className="animate-spin mr-2 h-4 w-4" />
@@ -396,7 +525,8 @@ export default function AdminDashboard({
                                 variant="ghost"
                                 onClick={async () =>
                                   deleteRobotMutate(robot.serialNo)
-                                }>
+                                }
+                              >
                                 {isDeleting ? (
                                   <Loader2 className="h-4 w-4 animate-spin" />
                                 ) : (

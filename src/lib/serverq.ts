@@ -186,3 +186,19 @@ export async function getServerReturnUrl() {
     headersList.get("referer") ?? `${process.env.BETTER_AUTH_URL}/dashboard/`;
   return referer;
 }
+
+export async function getRobotsCountByModel() {
+  const result = await db.select({
+    model: robotModelTable.model,
+    count: sql<number>`count(${robotsTable.id})`,
+  })
+  .from(robotModelTable)
+  .leftJoin(robotsTable, eq(robotModelTable.id, robotsTable.modelId))
+  .groupBy(robotModelTable.model);
+
+  return result;
+}
+
+export async function getAllUsers() {
+  return await db.query.user.findMany();
+}

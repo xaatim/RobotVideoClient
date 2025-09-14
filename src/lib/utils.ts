@@ -21,7 +21,7 @@ const getStatusColor = (status: string) => {
     case "maintenance":
       return "bg-yellow-500";
     default:
-      return "bg-gray-500";
+      return "bg-gray-400";
   }
 };
 

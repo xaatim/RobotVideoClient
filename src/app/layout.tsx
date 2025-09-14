@@ -26,13 +26,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased h-screen w-screen `}
+    <html lang="en" suppressHydrationWarning>
+      <body suppressHydrationWarning={true}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased h-screen w-screen scroll-smooth `}
       >
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
+          defaultTheme="dark"
           enableSystem
           disableTransitionOnChange
         >
