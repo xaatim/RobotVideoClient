@@ -8,8 +8,7 @@ import {
   AuthenticatedSocket,
   ClientToServerEvents,
   ServerToClientEvents,
-} from "../types/nexttoexpress";
-
+} from "../types/types";
 const app = express();
 const server = http.createServer(app);
 const io = new Server<ClientToServerEvents, ServerToClientEvents>(server, {
@@ -88,16 +87,15 @@ io.on("connection", (socket: AuthenticatedSocket) => {
   socket.on("robot:frame", (frame) => {
     if (socket.robot) {
       // console.log("robot sending frames: ",socket.robot?.serialNo)
-      // console.log("camera recieaved \n",frame)
+      // console.log("camera recieaved \n", frame);
       robotFrames.set(socket.robot.serialNo, frame);
       socket.broadcast.to(socket.robot.serialNo).emit("robot:stream", frame);
     }
   });
 
   socket.on("robot:requestStream", ({ serialNo }) => {
-    console.log(" requested stream for robot ",serialNo);
     if (socket.userId) {
-      console.log("client requested stream");
+      // console.log(" requested stream for robot ", serialNo);
       const lastFrame = robotFrames.get(serialNo);
       if (lastFrame) {
         console.log("emmting last frame to :", serialNo);
@@ -118,10 +116,18 @@ io.on("connection", (socket: AuthenticatedSocket) => {
 
   socket.on("robot:controlMode", ({ RobotControlData, serialNo }) => {
     if (socket.userId) {
-      console.log(
-        `User ${socket.userId} sending mode ${JSON.stringify(RobotControlData)} to robot ${serialNo}`
-      );
+      // console.log(
+      //   `User ${socket.userId} sending mode ${JSON.stringify(
+      //     RobotControlData
+      //   )} to robot ${serialNo}`
+      // );
       socket.to(serialNo).emit("robot:controlMode", RobotControlData);
+    }
+  });
+  socket.on("robot:videoMode", ({ serialNo, vidoeMode }) => {
+    if (socket.userId) {
+      console.log(` to robot ${serialNo} mode =${vidoeMode}`);
+      socket.to(serialNo).emit("robot:videoMode", vidoeMode);
     }
   });
 
