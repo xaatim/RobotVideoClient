@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSocketIo } from "./useSocketIo";
-import { robotMode, TwistMessage } from "../../types/nexttoexpress";
+import { robotMode, TwistMessage } from "../../types/types";
 
 export function useRobotStatus(robotId?: string) {
   const { on, emit, off } = useSocketIo();
