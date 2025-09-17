@@ -1,11 +1,9 @@
-import { useRobotStream } from "@/hooks/useRobotStream";
 import { userRobots } from "@/lib/serverq";
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { Button } from "./ui/button";
 import { Maximize, Pause, Play, Video, Volume2, VolumeX } from "lucide-react";
+import { useState } from "react";
+import { Button } from "./ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Slider } from "./ui/slider";
-import { videoMode } from "../../types/types";
 
 export default function VideoElemt({
   robot,
