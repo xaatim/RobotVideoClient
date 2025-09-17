@@ -6,13 +6,9 @@ export function useRobotStatus(robotId?: string) {
   const { on, emit, off } = useSocketIo();
   const [status, setStatus] = useState<robotMode | null>(null);
   const [twitsData, setTwistData] = useState<TwistMessage | undefined>();
-  const [isManual, setIsManual] = useState(status=="manual");
+  const [isManual, setIsManual] = useState(status == "manual");
 
   useEffect(() => {
-    if (!robotId) return;
-
-    emit("robot:join", { serialNo: robotId });
-
     const handleStatusUpdate = (mode: robotMode) => {
       setStatus(mode);
     };
@@ -22,7 +18,7 @@ export function useRobotStatus(robotId?: string) {
     return () => {
       off("robot:statusUpdate", handleStatusUpdate);
     };
-  }, [robotId]);
+  }, []);
 
   useEffect(() => {
     emit("robot:controlMode", {
