@@ -79,8 +79,15 @@ io.on("connection", (socket: AuthenticatedSocket) => {
         if (room !== socket.id) socket.leave(room);
       });
       socket.join(serialNo);
+      socket.emit("robot:joined", true);
     } else {
       console.log("Socket is not a user, cannot join a robot room.");
+    }
+  });
+  socket.on("robot:videoMode", ({ serialNo, vidoeMode }) => {
+    if (socket.userId) {
+      console.log(` to robot ${serialNo} mode =${vidoeMode}`);
+      socket.to(serialNo).emit("robot:videoMode", vidoeMode);
     }
   });
 
@@ -122,12 +129,6 @@ io.on("connection", (socket: AuthenticatedSocket) => {
       //   )} to robot ${serialNo}`
       // );
       socket.to(serialNo).emit("robot:controlMode", RobotControlData);
-    }
-  });
-  socket.on("robot:videoMode", ({ serialNo, vidoeMode }) => {
-    if (socket.userId) {
-      console.log(` to robot ${serialNo} mode =${vidoeMode}`);
-      socket.to(serialNo).emit("robot:videoMode", vidoeMode);
     }
   });
 
