@@ -1,12 +1,15 @@
 "use client";
-import { io, Socket } from "socket.io-client";
-import { useEffect, useRef, useState } from "react";
 import { authClient } from "@/lib/auth-client";
-import { ClientToServerEvents, ServerToClientEvents } from "../../types/nexttoexpress";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { io, Socket } from "socket.io-client";
+import { ClientToServerEvents, ServerToClientEvents } from "../../types/types";
 
 export function useSocketIo() {
   const session = authClient.useSession().data;
-  const socketRef = useRef<Socket<ServerToClientEvents, ClientToServerEvents> | null>(null);
+  const socketRef = useRef<Socket<
+    ServerToClientEvents,
+    ClientToServerEvents
+  > | null>(null);
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
@@ -26,11 +29,10 @@ export function useSocketIo() {
     }
 
     const socket = socketRef.current;
-    
 
     const onConnect = () => setIsConnected(true);
     const onDisconnect = () => setIsConnected(false);
-    
+
     socket.on("connect", onConnect);
     socket.on("disconnect", onDisconnect);
 
@@ -43,8 +45,7 @@ export function useSocketIo() {
         socketRef.current = null;
       }
     };
-    
-  }, [session]); 
+  }, [session]);
 
   function on<EventKey extends keyof ServerToClientEvents>(
     event: EventKey,
@@ -61,13 +62,15 @@ export function useSocketIo() {
     return () => socketRef.current?.off(event, callback as any);
   }
 
-  function emit<EventKey extends keyof ClientToServerEvents>(
-    event: EventKey,
-    ...args: Parameters<ClientToServerEvents[EventKey]>
-  ) {
-    socketRef.current?.emit(event, ...args);
-  }
-  
+  const emit = useCallback(
+    <EventKey extends keyof ClientToServerEvents>(
+      event: EventKey,
+      ...args: Parameters<ClientToServerEvents[EventKey]>
+    ) => {
+      socketRef.current?.emit(event, ...args);
+    },
+    []
+  );
 
-  return { socket: socketRef.current, on, emit, isConnected,off };
+  return { socket: socketRef.current, on, emit, isConnected, off };
 }
