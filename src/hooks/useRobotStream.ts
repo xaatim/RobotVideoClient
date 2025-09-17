@@ -8,9 +8,15 @@ type stream = {
 };
 export function useRobotStream({ selectedRobot, videoMode }: stream) {
   const [streamUrl, setStreamUrl] = useState("");
-  const { emit, on, off, socket } = useSocketIo();
+  const { emit, on, off, socket, isConnected } = useSocketIo();
   useEffect(() => {
-    if (!selectedRobot) return;
+    if (!selectedRobot || !isConnected) return;
+    console.log("this hapened");
+
+    emit("robot:videoMode", {
+      vidoeMode: videoMode,
+      serialNo: selectedRobot.serialNo,
+    });//send mode 
 
     emit("robot:requestStream", { serialNo: selectedRobot.serialNo });
 
@@ -41,7 +47,7 @@ export function useRobotStream({ selectedRobot, videoMode }: stream) {
         return "";
       });
     };
-  }, [selectedRobot, socket, videoMode]);
+  }, [selectedRobot, socket, videoMode, isConnected]);
 
   return streamUrl;
 }
