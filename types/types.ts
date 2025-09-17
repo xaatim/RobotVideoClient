@@ -27,6 +27,7 @@ interface RobotToServerEvent {
 
 export interface ServerToClientEvents extends ServerToRobotEvent {
   "robot:stream": (frame: Uint8Array) => void;
+  "robot:joined": (joined:boolean) => void;
   "robot:streamStop": (msg: { serialNo: string }) => void;
   "robot:statusUpdate": (mode: robotMode) => void;
   error: (msg: string) => void;
