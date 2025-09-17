@@ -1,33 +1,22 @@
 "use client";
-
-import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
-import { Slider } from "@/components/ui/slider";
-import {
-  Play,
-  Pause,
-  MapPin,
-  Video,
-  Settings,
-  Battery,
-  Wifi,
-  Camera,
-  Mic,
-  Volume2,
-  VolumeX,
-  Maximize,
-} from "lucide-react";
-import Link from "next/link";
-import { userRobots } from "@/lib/serverq";
-import GoogleMap from "./Googlemap";
-import { Controller } from "./Controls";
-import { useRobotStream } from "../hooks/useRobotStream";
+import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useRobotStatus } from "@/hooks/useRobotStatus";
+import { useSocketIo } from "@/hooks/useSocketIo";
+import { userRobots } from "@/lib/serverq";
 import { keyTpes } from "@/lib/utils";
+import { Battery, Camera, MapPin, Mic, Settings, Wifi } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { videoMode } from "../../types/types";
+import { Controller } from "./Controls";
+import GoogleMap from "./Googlemap";
+import VideoElemt from "./VideoElemt";
+import { useRobotStream } from "@/hooks/useRobotStream";
 
 type RobotControRoomPros = {
   intialRobot: userRobots;
@@ -35,16 +24,28 @@ type RobotControRoomPros = {
 
 export default function RobotControRoom({ intialRobot }: RobotControRoomPros) {
   const [robot] = useState(intialRobot);
-  const streamUrl = useRobotStream(robot);
   const { status, toggleRobotControl, setRobotTwist } = useRobotStatus(
     robot?.serialNo
   );
+  const [videoMode, setVideoMode] = useState<videoMode>("live_frame");
+  const streamUrl = useRobotStream({ selectedRobot: robot, videoMode });
+  const { emit, off } = useSocketIo();
+
+  useEffect(() => {
+    console.log("this hapened");
+    function senMode() {
+      emit("robot:videoMode", {
+        vidoeMode: videoMode,
+        serialNo: robot.serialNo,
+      });
+    }
+    senMode();
+    return () => {
+      off("robot:videoMode", senMode);
+    };
+  }, [videoMode]);
 
   const [isAutonomous, setIsAutonomous] = useState(status !== "autonomous");
-  const [isRecording, setIsRecording] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
-  const [volume, setVolume] = useState([75]);
-  const [zoom, setZoom] = useState([100]);
 
   function handleRobotMove(pressed: keyTpes) {
     console.log("pressed ", pressed);
@@ -101,9 +102,7 @@ export default function RobotControRoom({ intialRobot }: RobotControRoomPros) {
                 <Link href="/dashboard/user">← Back</Link>
               </Button>
               <div>
-                <h1 className="text-2xl font-bold">
-                  {robot.customName}
-                </h1>
+                <h1 className="text-2xl font-bold">{robot.customName}</h1>
                 <p className="text-gray-400 dark:text-gray-600">
                   {robot.modelRelation.model} • {robot.modelRelation.modelType}
                 </p>
@@ -126,103 +125,39 @@ export default function RobotControRoom({ intialRobot }: RobotControRoomPros) {
 
       <div className="container mx-auto px-6 py-6">
         <div className="grid lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            <Card className="border border-gray-800 dark:border-gray-300">
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">
-                    Live Video Feed
-                  </CardTitle>
-                  <div className="flex items-center gap-2">
-                    <Button size="sm" variant="outline" className="bg-transparent">
-                      <Maximize className="w-4 h-4 text-foreground" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant={isRecording ? "destructive" : "outline"}
-                      onClick={() => setIsRecording(!isRecording)}
-                      className={isRecording ? "" : "bg-transparent"}
-                    >
-                      {isRecording ? (
-                        <Pause className="w-4 h-4 text-foreground" />
-                      ) : (
-                        <Play className="w-4 h-4 text-foreground" />
-                      )}
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="aspect-video bg-background rounded-lg relative overflow-hidden">
-                  {streamUrl ? (
-                    <img
-                      src={streamUrl}
-                      className="aspect-square w-full h-full text-center"
-                      onError={(e) => {
-                        e.currentTarget.src = '';
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-background flex items-center justify-center">
-                      <div className="text-center text-gray-400 dark:text-gray-600">
-                        <Video className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                        <p>Robot Offline</p>
-                        <p className="text-sm">Video feed unavailable</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <div className="mt-4 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setIsMuted(!isMuted)}
-                        className="bg-transparent"
-                      >
-                        {isMuted ? (
-                          <VolumeX className="w-4 h-4 text-foreground" />
-                        ) : (
-                          <Volume2 className="w-4 h-4 text-foreground" />
-                        )}
-                      </Button>
-                      <div className="flex items-center gap-2 min-w-[120px]">
-                        <span className="text-sm text-gray-400 dark:text-gray-600">
-                          Volume
-                        </span>
-                        <Slider
-                          value={volume}
-                          onValueChange={setVolume}
-                          max={100}
-                          step={1}
-                          className="flex-1"
-                          disabled={isMuted}
-                        />
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 min-w-[120px]">
-                      <span className="text-sm text-gray-400 dark:text-gray-600">
-                        Zoom
-                      </span>
-                      <Slider
-                        value={zoom}
-                        onValueChange={setZoom}
-                        min={50}
-                        max={300}
-                        step={10}
-                        className="flex-1"
-                      />
-                      <span className="text-sm text-gray-400 dark:text-gray-600 w-12">
-                        {zoom[0]}%
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+          <div className="lg:col-span-2 space-y-6 ">
+            <Tabs defaultValue="live_feed">
+              <TabsList className="w-full">
+                <TabsTrigger
+                  className="w-full"
+                  value="live_feed"
+                  onClick={() => setVideoMode("live_frame")}
+                >
+                  Video Feed
+                </TabsTrigger>
+                <TabsTrigger
+                  className="w-full"
+                  value="rec_feed"
+                  onClick={() => setVideoMode("rec_frames")}
+                >
+                  Recognition Feed
+                </TabsTrigger>
+              </TabsList>
+              <TabsContent value="live_feed">
+                <VideoElemt
+                  robot={robot}
+                  title="Live Video Feed"
+                  streamUrl={streamUrl}
+                />
+              </TabsContent>
+              <TabsContent value="rec_feed">
+                <VideoElemt
+                  robot={robot}
+                  title="Live Recognition Feed"
+                  streamUrl={streamUrl}
+                />
+              </TabsContent>
+            </Tabs>
 
             <Controller
               hanleTwist={handleRobotMove}
@@ -242,7 +177,9 @@ export default function RobotControRoom({ intialRobot }: RobotControRoomPros) {
               <CardContent className="space-y-4">
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-400 dark:text-gray-600">Battery Level</span>
+                    <span className="text-gray-400 dark:text-gray-600">
+                      Battery Level
+                    </span>
                     <span className="text-foreground font-medium">90%</span>
                   </div>
                   <Progress value={90} className="h-2" />
@@ -264,11 +201,15 @@ export default function RobotControRoom({ intialRobot }: RobotControRoomPros) {
 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-400 dark:text-gray-600">Temperature</span>
+                    <span className="text-gray-400 dark:text-gray-600">
+                      Temperature
+                    </span>
                     <span className="text-foreground font-medium">{40}°C</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-400 dark:text-gray-600">Location</span>
+                    <span className="text-gray-400 dark:text-gray-600">
+                      Location
+                    </span>
                     <span className="text-foreground font-medium text-right text-sm">
                       not yet
                     </span>
@@ -288,7 +229,11 @@ export default function RobotControRoom({ intialRobot }: RobotControRoomPros) {
                   <GoogleMap />
                 </div>
                 <div className="mt-3 text-center">
-                  <Button size="sm" variant="outline" className="bg-transparent  text-white dark:text-black">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="bg-transparent  text-white dark:text-black"
+                  >
                     <MapPin className="w-4 h-4 mr-2 text-foreground" />
                     View Full Map
                   </Button>
@@ -311,7 +256,7 @@ export default function RobotControRoom({ intialRobot }: RobotControRoomPros) {
                   <Mic className="w-4 h-4 mr-2 text-foreground" />
                   Voice Command
                 </Button>
-                <Button variant="outline"  className=" w-full ">
+                <Button variant="outline" className=" w-full ">
                   <Settings className="w-4 h-4 mr-2 text-foreground" />
                   Robot Settings
                 </Button>
