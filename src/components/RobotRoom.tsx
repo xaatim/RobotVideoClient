@@ -27,23 +27,15 @@ export default function RobotControRoom({ intialRobot }: RobotControRoomPros) {
   const { status, toggleRobotControl, setRobotTwist } = useRobotStatus(
     robot?.serialNo
   );
-  const [videoMode, setVideoMode] = useState<videoMode>("live_frame");
-  const streamUrl = useRobotStream({ selectedRobot: robot, videoMode });
-  const { emit, off } = useSocketIo();
+  const { emit, isConnected } = useSocketIo();
 
   useEffect(() => {
-    console.log("this hapened");
-    function senMode() {
-      emit("robot:videoMode", {
-        vidoeMode: videoMode,
-        serialNo: robot.serialNo,
-      });
-    }
-    senMode();
-    return () => {
-      off("robot:videoMode", senMode);
-    };
-  }, [videoMode]);
+    if (!robot.serialNo || !isConnected) return;
+    emit("robot:join", { serialNo: robot.serialNo });
+  }, [robot.serialNo, isConnected]);
+
+  const [videoMode, setVideoMode] = useState<videoMode>("live_frame");
+  const streamUrl = useRobotStream({ selectedRobot: robot, videoMode });
 
   const [isAutonomous, setIsAutonomous] = useState(status !== "autonomous");
 
