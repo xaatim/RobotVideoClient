@@ -22,7 +22,7 @@ export function useSocketIo() {
     }
 
     if (!socketRef.current) {
-      socketRef.current = io("http://localhost:4000", {
+      socketRef.current = io(process.env.EXPRESS_URL!, {
         auth: { userId: session.user.id },
       });
       console.log("Creating new socket connection.");
