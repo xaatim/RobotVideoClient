@@ -11,7 +11,7 @@ export function useSocketIo() {
     ClientToServerEvents
   > | null>(null);
   const [isConnected, setIsConnected] = useState(false);
-
+  console.log("trying to connect :",process.env.EXPRESS_URL!)
   useEffect(() => {
     if (!session?.user?.id) {
       if (socketRef.current) {
