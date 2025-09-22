@@ -11,7 +11,7 @@ export function useSocketIo() {
     ClientToServerEvents
   > | null>(null);
   const [isConnected, setIsConnected] = useState(false);
-  console.log("trying to connect :",process.env.EXPRESS_URL!)
+  console.log("trying to connect :",process.env.NEXT_PUBLIC_EXPRESS_URL!)
   useEffect(() => {
     if (!session?.user?.id) {
       if (socketRef.current) {
@@ -22,7 +22,7 @@ export function useSocketIo() {
     }
 
     if (!socketRef.current) {
-      socketRef.current = io(process.env.EXPRESS_URL!, {
+      socketRef.current = io(process.env.NEXT_PUBLIC_EXPRESS_URL!, {
         auth: { userId: session.user.id },
       });
       console.log("Creating new socket connection.");

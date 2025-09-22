@@ -13,6 +13,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server<ClientToServerEvents, ServerToClientEvents>(server, {
   cors: { origin: "*" },
+  
 });
 
 io.use(async (socket: AuthenticatedSocket, next) => {
